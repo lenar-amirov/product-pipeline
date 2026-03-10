@@ -11,7 +11,7 @@ fi
 PM="$1"
 NAME="$2"
 BASE="$(cd "$(dirname "$0")" && pwd)"
-TEMPLATE="$BASE/_template"
+TEMPLATE="$BASE/template"
 TARGET="$BASE/$PM/$NAME"
 
 # Создаём папку продакта если нет

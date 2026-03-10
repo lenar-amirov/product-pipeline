@@ -9,7 +9,7 @@
 3. Обнови соответствующие секции `output/PRD.md` (см. маппинг шаг → секция PRD)
 
 ## Скилы
-Используй скилы из `~/pipeline/skills/`. Каждый шаг пайплайна указывает, какие скилы читать перед выполнением.
+Используй скилы из `~/pipeline/skills/`. Каждый скил лежит в своей папке: `~/pipeline/skills/<название>/<название>.md`. Референсы к `consulting-problem-solving` — в `~/pipeline/skills/consulting-problem-solving/references/`.
 
 | Скил | Применение |
 |------|-----------|
@@ -356,7 +356,7 @@ PRD наполняется по ходу пайплайна. Каждый шаг
 
 После создания `output/presentation.md` запусти скрипт генерации:
 ```bash
-python3 ~/pipeline/generate-pptx.py <название-папки-инициативы>
+python3 ~/pipeline/scripts/generate-pptx.py <название-папки-инициативы>
 ```
 Скрипт создаст `output/presentation.pptx` — готовый файл для открытия в PowerPoint или импорта в Google Slides.
 
