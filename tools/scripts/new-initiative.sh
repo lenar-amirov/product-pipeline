@@ -34,6 +34,11 @@ fi
 sed -i '' "s/\[НАЗВАНИЕ\]/$NAME/g" "$TARGET/CONTEXT.md"
 sed -i '' "s/\[ИМЯ\]/$PM/g" "$TARGET/CONTEXT.md"
 
+# Инициализируем трекер статуса
+cat > "$TARGET/output/status.json" << EOF
+{"stage": "in_progress", "pm": "$PM", "initiative": "$NAME", "updated": "$(date +%Y-%m-%d)"}
+EOF
+
 echo "✓ Инициатива создана: $TARGET"
 echo ""
 echo "Дальше:"

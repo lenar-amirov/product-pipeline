@@ -1,0 +1,10 @@
+{
+  "bot_token": "YOUR_BOT_TOKEN_FROM_BOTFATHER",
+  "pms": {
+    "lenar":  "YOUR_TELEGRAM_CHAT_ID",
+    "slava":  "SLAVA_TELEGRAM_CHAT_ID",
+    "olya":   "OLYA_TELEGRAM_CHAT_ID",
+    "zhanna": "ZHANNA_TELEGRAM_CHAT_ID",
+    "sergey": "SERGEY_TELEGRAM_CHAT_ID"
+  }
+}
