@@ -9,8 +9,6 @@ if [ -f "$STATE" ]; then
     TARGET=$(cat "$STATE")
     rm -f "$STATE"
     cd "$TARGET" 2>/dev/null
-    claude
-    exec bash -l
-else
-    exec bash -l
 fi
+
+exec bash -l
