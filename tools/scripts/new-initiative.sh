@@ -42,8 +42,8 @@ d = {
   'initiative': sys.argv[2],
   'pending': {
     'analytics_brief': None, 'survey_brief': None, 'audience_brief': None,
-    'analytics_results': None, 'design_brief': None, 'gate1_challenge': None,
-    'jira': None, 'grooming': None
+    'analytics_results': None, 'survey_results': None,
+    'design_brief': None, 'gate1_challenge': None, 'gate2_challenge': None
   }
 }
 print(json.dumps(d, indent=2, ensure_ascii=False))

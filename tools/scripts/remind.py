@@ -59,6 +59,15 @@ RULES = {
         "repeat_every_days": 7,
         "friday_digest": True,
     },
+    "survey_results": {
+        "emoji": "📋",
+        "title": "Запроси результаты опроса",
+        "body": "Прошло 2 недели с момента передачи опроса",
+        "hint": "Когда получишь → <b>/confirm-survey-results</b>",
+        "remind_after_days": 14,
+        "repeat_every_days": 7,
+        "friday_digest": True,
+    },
     "design_brief": {
         "emoji": "🎨",
         "title": "Передай бриф дизайнеру",
@@ -74,21 +83,12 @@ RULES = {
         "hint": "Когда сходишь → <b>/confirm-gate1-challenge</b>",
         "remind_on": "next_monday",
     },
-    "jira": {
-        "emoji": "📋",
-        "title": "Создай задачи в Jira",
-        "body": "Тикеты готовы в <code>output/jira-tickets.md</code>",
-        "hint": "Когда создашь → <b>/confirm-jira</b>",
-        "remind_after_days": 1,
-        "repeat_every_days": 1,
-    },
-    "grooming": {
-        "emoji": "🗓",
-        "title": "Запишись на грумминг к аналитикам",
-        "body": "Задачи в Jira готовы",
-        "hint": "Когда грумминг пройдёт → <b>/confirm-grooming</b>",
-        "remind_after_days": 2,
-        "repeat_every_days": 2,
+    "gate2_challenge": {
+        "emoji": "🏁",
+        "title": "Иди на Challenge Gate 2",
+        "body": "Презентация готова, пора защищать",
+        "hint": "Когда сходишь → <b>/confirm-gate2-challenge</b>",
+        "remind_on": "next_monday",
     },
 }
 
@@ -227,6 +227,42 @@ def main():
 
             if send_telegram(bot_token, chat_id, text):
                 log(f"Sent to {pm}: {initiative} / {event_type} (day {days})")
+                sent += 1
+
+    # Check for stale initiatives (no active pending events + not updated for 14 days)
+    for status_file in glob.glob(f"{BASE_DIR}/*/*/output/status.json"):
+        try:
+            with open(status_file) as f:
+                status = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            continue
+
+        pm = status.get("pm", "")
+        initiative = status.get("initiative",
+            os.path.basename(os.path.dirname(os.path.dirname(status_file)))
+        )
+        pending = status.get("pending", {})
+        chat_id = pms_config.get(pm)
+
+        if not chat_id or "YOUR_TELEGRAM" in str(chat_id):
+            continue
+
+        has_active = any(v is not None for v in pending.values())
+        if has_active:
+            continue
+
+        mtime = date.fromtimestamp(os.path.getmtime(status_file))
+        days_stale = (today - mtime).days
+
+        if days_stale >= 14 and (days_stale - 14) % 14 == 0:
+            text = (
+                f"💤 <b>{initiative}</b>\n\n"
+                f"<b>Инициатива не обновлялась {days_stale} дней</b>\n"
+                f"Нет активных задач в пайплайне\n\n"
+                f"💡 Продолжи работу над следующим шагом или закрой инициативу"
+            )
+            if send_telegram(bot_token, chat_id, text):
+                log(f"Stale reminder → {pm}: {initiative} ({days_stale} days)")
                 sent += 1
 
     # Send Friday digest

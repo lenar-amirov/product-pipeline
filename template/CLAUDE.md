@@ -66,10 +66,10 @@ PRD наполняется по ходу пайплайна. Каждый шаг
     "survey_brief":      null,
     "audience_brief":    null,
     "analytics_results": null,
+    "survey_results":    null,
     "design_brief":      null,
     "gate1_challenge":   null,
-    "jira":              null,
-    "grooming":          null
+    "gate2_challenge":   null
   }
 }
 ```
@@ -572,6 +572,8 @@ Gate 2 + название инициативы
 
 После создания `output/gate2-presentation.md` запусти скрипт генерации .pptx.
 
+📍 **Трекинг**: активируй `pending.gate2_challenge` в `output/status.json`. Скажи: "Презентация Gate 2 готова. В ближайший понедельник Telegram напомнит сходить на Challenge."
+
 ---
 
 ### `/create-jira`
@@ -583,7 +585,7 @@ Gate 2 + название инициативы
 Для каждой ✅ подтверждённой гипотезы создай Jira тикеты.
 Формат: Epic → Stories → Sub-tasks (см. раздел ФОРМАТЫ).
 
-📍 После создания тикетов: активируй `pending.jira` в `output/status.json`. Скажи продакту: "Тикеты готовы в `output/jira-tickets.md`. Создай их в Jira и напиши `/confirm-jira`"
+После создания: скажи продакту: "Тикеты готовы в `output/jira-tickets.md`. Создай их в Jira и напиши `/confirm-jira` чтобы зафиксировать."
 
 ---
 
@@ -591,8 +593,8 @@ Gate 2 + название инициативы
 **Тип**: 👤 Продакт подтверждает
 **Триггер**: продакт создал задачи в Jira
 
-1. Закрой `pending.jira = null`, активируй `pending.grooming` в `output/status.json`
-2. Ответ: "✅ Отмечено. Telegram напомнит записаться на грумминг к аналитикам."
+1. Запиши в `output/decisions.md`: дата + "Jira тикеты созданы"
+2. Ответ: "✅ Отмечено."
 
 ---
 
@@ -612,11 +614,11 @@ Gate 2 + название инициативы
 
 ### `/confirm-analytics-sent`
 **Тип**: 👤 Продакт подтверждает
-**Триггер**: продакт передал брифы аналитику
+**Триггер**: продакт передал брифы аналитику и опрос
 
 1. Закрой `pending.analytics_brief = null`, `pending.survey_brief = null`, `pending.audience_brief = null`
-2. Активируй `pending.analytics_results` в `output/status.json`
-3. Ответ: "✅ Отмечено. Через неделю Telegram напомнит запросить результаты. Каждую пятницу — дайджест всех активных задач у аналитика."
+2. Активируй `pending.analytics_results` и `pending.survey_results` в `output/status.json`
+3. Ответ: "✅ Отмечено. Через неделю напомню запросить данные у аналитика, через 2 недели — результаты опроса. Каждую пятницу — дайджест."
 
 ---
 
@@ -628,6 +630,17 @@ Gate 2 + название инициативы
 2. Запиши ответ в `research/analytics-data.md`
 3. Закрой `pending.analytics_results = null` в `output/status.json`
 4. Ответ: "✅ Данные зафиксированы. Можно запускать `/validate-problems`"
+
+---
+
+### `/confirm-survey-results`
+**Тип**: 👤 Продакт вносит результаты
+**Триггер**: команда вернула результаты опроса
+
+1. Спроси продакта: "Что получили по опросу? Ключевые цифры, паттерны, неожиданные ответы."
+2. Запиши ответ в `research/survey-results.md`
+3. Закрой `pending.survey_results = null` в `output/status.json`
+4. Ответ: "✅ Результаты опроса зафиксированы в `research/survey-results.md`. Используй их в `/validate-problems`"
 
 ---
 
@@ -647,6 +660,17 @@ Gate 2 + название инициативы
 1. Спроси: "Каков результат Challenge? (принято / отправили на доработку — что именно)"
 2. Запиши ответ в `output/decisions.md`
 3. Закрой `pending.gate1_challenge = null` в `output/status.json`
+4. Ответ: "✅ Зафиксировано."
+
+---
+
+### `/confirm-gate2-challenge`
+**Тип**: 👤 Продакт подтверждает
+**Триггер**: Challenge Gate 2 прошёл
+
+1. Спроси: "Каков результат Challenge Gate 2? (принято / отправили на доработку — что именно)"
+2. Запиши ответ в `output/decisions.md`
+3. Закрой `pending.gate2_challenge = null` в `output/status.json`
 4. Ответ: "✅ Зафиксировано."
 
 ---
