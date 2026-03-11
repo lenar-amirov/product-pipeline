@@ -25,9 +25,14 @@ LOG_FILE = f"{BASE_DIR}/logs/remind.log"
 RULES = {
     "analytics_brief": {
         "emoji": "📊",
-        "title": "Передай бриф аналитику",
-        "body": "Бриф готов в <code>research/analytics-brief.md</code>",
-        "hint": "Когда передашь → <b>/confirm-analytics-sent</b>",
+        "title": "Передай брифы аналитику",
+        "body": (
+            "Готовы три брифа:\n"
+            "• <code>research/analytics-brief.md</code>\n"
+            "• <code>research/survey-questions.md</code>\n"
+            "• <code>research/survey-audience-brief.md</code>"
+        ),
+        "hint": "Когда передашь все три → <b>/confirm-analytics-sent</b>",
         "remind_after_days": 1,
         "repeat_every_days": 0,
         "friday_digest": True,
@@ -40,6 +45,7 @@ RULES = {
         "remind_after_days": 1,
         "repeat_every_days": 0,
         "friday_digest": True,
+        "silent": True,
     },
     "audience_brief": {
         "emoji": "👥",
@@ -49,6 +55,7 @@ RULES = {
         "remind_after_days": 1,
         "repeat_every_days": 0,
         "friday_digest": True,
+        "silent": True,
     },
     "analytics_results": {
         "emoji": "📈",
@@ -217,6 +224,10 @@ def main():
             else:
                 if not should_remind(event_date, today, rule):
                     continue
+
+            # Skip individual message for silent events (friday digest only)
+            if rule.get("silent"):
+                continue
 
             text = (
                 f"{rule['emoji']} <b>{initiative}</b>\n\n"
