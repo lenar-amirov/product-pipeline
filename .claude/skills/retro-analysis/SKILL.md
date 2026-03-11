@@ -1,6 +1,6 @@
 ---
 name: retro-analysis
-description: Analyse sprint delivery data and produce a structured retrospective brief
+description: Analyses sprint or experiment delivery data and produces a data-grounded retrospective brief with Start/Stop/Continue prompts and one concrete process experiment. Use when user needs a retro, post-mortem, or says "retrospective", "ретро", "retro brief", "sprint retro", "post-mortem", "что пошло не так в спринте", "итоги AB-теста".
 tool_integration: Jira, Miro
 ---
 # Retrospective Analysis Skill
