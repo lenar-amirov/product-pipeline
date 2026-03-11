@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline — {{ pm }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --header-bg: #1e293b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    header {
+      background: var(--header-bg);
+      color: #fff;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header .logo {
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -.01em;
+    }
+    header .user-badge {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    /* ---- Main layout ---- */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    /* ---- Top row ---- */
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .top-row h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .btn-new {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .btn-new:hover { background: var(--primary-hover); }
+
+    /* ---- Cards grid ---- */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    /* ---- Progress ---- */
+    .progress-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .progress-bar-bg {
+      background: var(--border);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--success);
+      border-radius: 99px;
+      transition: width .3s ease;
+    }
+    .progress-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ---- Pending items ---- */
+    .pending-list { display: flex; flex-direction: column; gap: 6px; }
+    .pending-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .pending-emoji { font-size: 15px; flex-shrink: 0; }
+    .pending-label { flex: 1; }
+    .pill {
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 99px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .no-pending {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ---- Card footer ---- */
+    .card-footer {
+      margin-top: auto;
+      display: flex;
+      gap: 8px;
+    }
+    .btn-outline {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-primary {
+      flex: 1;
+      text-align: center;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    /* ---- Empty state ---- */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .empty-state .empty-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    .empty-state h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .empty-state p {
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+    .btn-big {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background .15s;
+    }
+    .btn-big:hover { background: var(--primary-hover); }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">PM Pipeline</span>
+  <span class="user-badge">{{ pm }}</span>
+</header>
+
+<main>
+  <div class="top-row">
+    <h1>Инициативы</h1>
+    <a href="/{{ pm }}/new" class="btn-new">+ Новая инициатива</a>
+  </div>
+
+  {% if initiatives %}
+  <div class="grid">
+    {% for ini in initiatives %}
+    <div class="card">
+      <div class="card-title">{{ ini.name }}</div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill"
+               style="width: {{ (ini.steps_done / total_steps * 100) | round(1) }}%"></div>
+        </div>
+        <span class="progress-label">{{ ini.steps_done }} из {{ total_steps }} шагов</span>
+      </div>
+
+      <div class="pending-list">
+        {% if ini.pending %}
+          {% for item in ini.pending %}
+          <div class="pending-item">
+            <span class="pending-emoji">{{ item.emoji }}</span>
+            <span class="pending-label">{{ item.label }}</span>
+            {% if item.days > 0 %}
+            <span class="pill">{{ item.days }} дн.</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <span class="no-pending">Нет активных задач</span>
+        {% endif %}
+      </div>
+
+      <div class="card-footer">
+        <a href="/{{ pm }}/initiative/{{ ini.name }}" class="btn-outline">Подробнее →</a>
+        <button class="btn-primary" onclick="openInClaude('{{ pm }}', '{{ ini.name }}')">
+          Открыть Claude Code
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <h2>Нет инициатив</h2>
+    <p>Создайте первую инициативу, чтобы начать работу</p>
+    <a href="/{{ pm }}/new" class="btn-big">+ Создать инициативу</a>
+  </div>
+  {% endif %}
+</main>
+
+<script>
+  async function openInClaude(pm, name) {
+    await fetch(`/${pm}/open/${name}`, { method: 'POST' });
+    window.open(`/${pm}/terminal/`, '_blank');
+  }
+</script>
+
+</body>
+</html>
