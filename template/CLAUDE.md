@@ -222,7 +222,7 @@ PRD наполняется по ходу пайплайна. Каждый шаг
    - Обоснуй sample size по методологии из `usability-test-plan.md`
    - ⚠️ Не спрашиваем "хотели бы вы X фичу" — только "как сейчас", "что мешает", "как часто"
 
-📍 **Трекинг**: активируй `pending.analytics_brief` и `pending.survey_brief` в `output/status.json`. Скажи продакту: "Брифы готовы. Когда передашь аналитику — напиши `/confirm-analytics-sent`"
+📍 **Трекинг**: активируй `pending.analytics_brief` и `pending.survey_brief` в `output/status.json`. Скажи продакту: "Брифы готовы. Когда передашь каждый — подтверди: `/confirm-analytics-brief`, `/confirm-survey-brief`"
 
 ---
 
@@ -250,7 +250,7 @@ PRD наполняется по ходу пайплайна. Каждый шаг
 4. Добавь SQL-псевдокод выборки по шаблону из `funnel-analysis-builder.md`
 5. Добавь раздел `## Вопросы к аналитику` — что нужно уточнить перед выгрузкой
 
-📍 **Трекинг**: активируй `pending.audience_brief` в `output/status.json`. Скажи: "Бриф выгрузки готов. Когда передашь аналитику — напиши `/confirm-analytics-sent`"
+📍 **Трекинг**: активируй `pending.audience_brief` в `output/status.json`. Скажи: "Бриф выгрузки готов. Когда передашь — напиши `/confirm-audience-brief`"
 
 ---
 
@@ -612,13 +612,32 @@ Gate 2 + название инициативы
 
 ---
 
-### `/confirm-analytics-sent`
+### `/confirm-analytics-brief`
 **Тип**: 👤 Продакт подтверждает
-**Триггер**: продакт передал брифы аналитику и опрос
+**Триггер**: продакт передал бриф аналитику
 
-1. Закрой `pending.analytics_brief = null`, `pending.survey_brief = null`, `pending.audience_brief = null`
-2. Активируй `pending.analytics_results` и `pending.survey_results` в `output/status.json`
-3. Ответ: "✅ Отмечено. Через неделю напомню запросить данные у аналитика, через 2 недели — результаты опроса. Каждую пятницу — дайджест."
+1. Закрой `pending.analytics_brief = null`
+2. Активируй `pending.analytics_results` в `output/status.json`
+3. Ответ: "✅ Отмечено. Через неделю напомню запросить результаты у аналитика."
+
+---
+
+### `/confirm-survey-brief`
+**Тип**: 👤 Продакт подтверждает
+**Триггер**: продакт передал бриф на опрос
+
+1. Закрой `pending.survey_brief = null`
+2. Активируй `pending.survey_results` в `output/status.json`
+3. Ответ: "✅ Отмечено. Через 2 недели напомню запросить результаты опроса."
+
+---
+
+### `/confirm-audience-brief`
+**Тип**: 👤 Продакт подтверждает
+**Триггер**: продакт передал бриф на выгрузку аудитории
+
+1. Закрой `pending.audience_brief = null` в `output/status.json`
+2. Ответ: "✅ Отмечено."
 
 ---
 
