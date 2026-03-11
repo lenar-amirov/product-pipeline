@@ -222,7 +222,7 @@ PRD наполняется по ходу пайплайна. Каждый шаг
    - Обоснуй sample size по методологии из `usability-test-plan.md`
    - ⚠️ Не спрашиваем "хотели бы вы X фичу" — только "как сейчас", "что мешает", "как часто"
 
-📍 **Трекинг**: активируй `pending.analytics_brief` и `pending.survey_brief` в `output/status.json`. Скажи продакту: "Брифы готовы. Когда передашь каждый — подтверди: `/confirm-analytics-brief`, `/confirm-survey-brief`"
+📍 **Трекинг**: активируй `pending.analytics_brief` и `pending.survey_brief` в `output/status.json`. Скажи продакту: "Брифы готовы. Когда передашь каждый — подтверди: `/analytics-brief-sent`, `/survey-brief-sent`"
 
 ---
 
@@ -250,7 +250,7 @@ PRD наполняется по ходу пайплайна. Каждый шаг
 4. Добавь SQL-псевдокод выборки по шаблону из `funnel-analysis-builder.md`
 5. Добавь раздел `## Вопросы к аналитику` — что нужно уточнить перед выгрузкой
 
-📍 **Трекинг**: активируй `pending.audience_brief` в `output/status.json`. Скажи: "Бриф выгрузки готов. Когда передашь — напиши `/confirm-audience-brief`"
+📍 **Трекинг**: активируй `pending.audience_brief` в `output/status.json`. Скажи: "Бриф выгрузки готов. Когда передашь — напиши `/audience-brief-sent`"
 
 ---
 
@@ -612,7 +612,7 @@ Gate 2 + название инициативы
 
 ---
 
-### `/confirm-analytics-brief`
+### `/analytics-brief-sent`
 **Тип**: 👤 Продакт подтверждает
 **Триггер**: продакт передал бриф аналитику
 
@@ -622,7 +622,7 @@ Gate 2 + название инициативы
 
 ---
 
-### `/confirm-survey-brief`
+### `/survey-brief-sent`
 **Тип**: 👤 Продакт подтверждает
 **Триггер**: продакт передал бриф на опрос
 
@@ -632,7 +632,7 @@ Gate 2 + название инициативы
 
 ---
 
-### `/confirm-audience-brief`
+### `/audience-brief-sent`
 **Тип**: 👤 Продакт подтверждает
 **Триггер**: продакт передал бриф на выгрузку аудитории
 
