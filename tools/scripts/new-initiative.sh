@@ -24,6 +24,12 @@ fi
 
 cp -r "$TEMPLATE" "$TARGET"
 
+# Создаём симлинк ~/.claude/skills → ~/pipeline/.claude/skills (один раз)
+if [ ! -e ~/.claude/skills ]; then
+  ln -sf ~/pipeline/.claude/skills ~/.claude/skills
+  echo "✓ Skills linked: ~/.claude/skills → ~/pipeline/.claude/skills"
+fi
+
 # Подставляем название и продакта в CONTEXT.md
 sed -i '' "s/\[НАЗВАНИЕ\]/$NAME/g" "$TARGET/CONTEXT.md"
 sed -i '' "s/\[ИМЯ\]/$PM/g" "$TARGET/CONTEXT.md"
