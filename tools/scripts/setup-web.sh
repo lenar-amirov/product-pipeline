@@ -11,7 +11,7 @@ WEB_DIR="/home/lenar/pipeline/tools/web"
 LOG_DIR="/home/lenar/pipeline/logs"
 
 echo "==> Installing Flask..."
-pip3 install flask
+apt-get install -y python3-flask -q
 
 echo "==> Creating log directory..."
 mkdir -p "$LOG_DIR"
