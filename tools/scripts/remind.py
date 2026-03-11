@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
 Telegram reminder script for PM pipeline.
-Reads output/status.json from all initiatives, sends reminders when needed.
-Run via cron: 0 10,16 * * * python3 ~/pipeline/tools/scripts/remind.py
+Cron: 0 8 * * * python3 ~/pipeline/tools/scripts/remind.py
+(8 UTC = 11 MSK)
 """
 
 import json
 import os
 import glob
-from datetime import date
+from datetime import date, timedelta
 import urllib.request
 import urllib.error
 
@@ -16,32 +16,108 @@ BASE_DIR = os.path.expanduser("~/pipeline")
 CONFIG_FILE = f"{BASE_DIR}/config/telegram.json"
 LOG_FILE = f"{BASE_DIR}/logs/remind.log"
 
-STAGES = {
-    "jira_needed": {
+# --- Rules ---
+# remind_after_days: первое напоминание через N дней после активации
+# repeat_every_days: повторять каждые N дней (0 = только один раз)
+# friday_digest: включить в пятничный дайджест аналитики
+# remind_on: "next_monday" — специальное правило (один раз, в ближайший понедельник)
+
+RULES = {
+    "analytics_brief": {
+        "emoji": "📊",
+        "title": "Передай бриф аналитику",
+        "body": "Бриф готов в <code>research/analytics-brief.md</code>",
+        "hint": "Когда передашь → <b>/confirm-analytics-sent</b>",
+        "remind_after_days": 1,
+        "repeat_every_days": 0,
+        "friday_digest": True,
+    },
+    "survey_brief": {
+        "emoji": "📝",
+        "title": "Передай бриф на опрос",
+        "body": "Бриф готов в <code>research/survey-questions.md</code>",
+        "hint": "Когда передашь → <b>/confirm-analytics-sent</b>",
+        "remind_after_days": 1,
+        "repeat_every_days": 0,
+        "friday_digest": True,
+    },
+    "audience_brief": {
+        "emoji": "👥",
+        "title": "Передай бриф на выгрузку аудитории",
+        "body": "Бриф готов в <code>research/survey-audience-brief.md</code>",
+        "hint": "Когда передашь → <b>/confirm-analytics-sent</b>",
+        "remind_after_days": 1,
+        "repeat_every_days": 0,
+        "friday_digest": True,
+    },
+    "analytics_results": {
+        "emoji": "📈",
+        "title": "Запроси результаты у аналитика",
+        "body": "Прошла неделя с момента передачи задач",
+        "hint": "Когда получишь → открой Claude Code и напиши <b>/confirm-analytics-results</b>",
+        "remind_after_days": 7,
+        "repeat_every_days": 7,
+        "friday_digest": True,
+    },
+    "design_brief": {
+        "emoji": "🎨",
+        "title": "Передай бриф дизайнеру",
+        "body": "Бриф готов в <code>output/design-brief.md</code>",
+        "hint": "Когда передашь → <b>/confirm-design-brief</b>",
+        "remind_after_days": 1,
+        "repeat_every_days": 0,
+    },
+    "gate1_challenge": {
+        "emoji": "🎯",
+        "title": "Иди на Challenge Gate 1",
+        "body": "Презентация готова, пора защищать",
+        "hint": "Когда сходишь → <b>/confirm-gate1-challenge</b>",
+        "remind_on": "next_monday",
+    },
+    "jira": {
         "emoji": "📋",
         "title": "Создай задачи в Jira",
-        "body": "Тикеты готовы в <code>output/jira-tickets.md</code>. Создай их в Jira.",
-        "hint": "Когда создашь → открой Claude Code и напиши <b>/confirm-jira</b>",
+        "body": "Тикеты готовы в <code>output/jira-tickets.md</code>",
+        "hint": "Когда создашь → <b>/confirm-jira</b>",
         "remind_after_days": 1,
         "repeat_every_days": 1,
     },
-    "grooming_needed": {
+    "grooming": {
         "emoji": "🗓",
         "title": "Запишись на грумминг к аналитикам",
-        "body": "Задачи в Jira есть — пора разобрать их с аналитиком.",
-        "hint": "Когда грумминг пройдёт → открой Claude Code и напиши <b>/confirm-grooming</b>",
+        "body": "Задачи в Jira готовы",
+        "hint": "Когда грумминг пройдёт → <b>/confirm-grooming</b>",
         "remind_after_days": 2,
         "repeat_every_days": 2,
     },
-    "results_needed": {
-        "emoji": "📊",
-        "title": "Внеси результаты грумминга",
-        "body": "Грумминг прошёл, но результаты ещё не зафиксированы.",
-        "hint": "Открой Claude Code и напиши <b>/confirm-grooming</b>",
-        "remind_after_days": 1,
-        "repeat_every_days": 1,
-    },
 }
+
+
+def next_monday(from_date: date) -> date:
+    """Ближайший понедельник строго после from_date."""
+    days_ahead = -from_date.weekday() % 7
+    if days_ahead == 0:
+        days_ahead = 7
+    return from_date + timedelta(days=days_ahead)
+
+
+def should_remind(event_date: date, today: date, rule: dict) -> bool:
+    if "remind_on" in rule:
+        if rule["remind_on"] == "next_monday":
+            return today == next_monday(event_date)
+        return False
+
+    days = (today - event_date).days
+    after = rule.get("remind_after_days", 1)
+    repeat = rule.get("repeat_every_days", 0)
+
+    if days < after:
+        return False
+    if days == after:
+        return True
+    if repeat == 0:
+        return False
+    return (days - after) % repeat == 0
 
 
 def send_telegram(bot_token: str, chat_id: str, text: str) -> bool:
@@ -50,6 +126,7 @@ def send_telegram(bot_token: str, chat_id: str, text: str) -> bool:
         "chat_id": chat_id,
         "text": text,
         "parse_mode": "HTML",
+        "disable_web_page_preview": True,
     }).encode()
     req = urllib.request.Request(
         url, data=payload,
@@ -59,13 +136,13 @@ def send_telegram(bot_token: str, chat_id: str, text: str) -> bool:
         urllib.request.urlopen(req, timeout=10)
         return True
     except urllib.error.URLError as e:
-        print(f"  Telegram error: {e}")
+        log(f"  Telegram error: {e}")
         return False
 
 
 def log(msg: str):
-    timestamp = date.today().isoformat()
-    line = f"[{timestamp}] {msg}"
+    ts = date.today().isoformat()
+    line = f"[{ts}] {msg}"
     print(line)
     os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
     with open(LOG_FILE, "a") as f:
@@ -81,14 +158,18 @@ def main():
         config = json.load(f)
 
     bot_token = config.get("bot_token", "")
-    pms = config.get("pms", {})
+    pms_config = config.get("pms", {})
 
-    if not bot_token or bot_token == "YOUR_BOT_TOKEN_FROM_BOTFATHER":
+    if not bot_token or "YOUR_BOT_TOKEN" in bot_token:
         log("Bot token not configured")
         return
 
     today = date.today()
+    is_friday = today.weekday() == 4
     sent = 0
+
+    # pm → list of digest lines
+    friday_digest: dict[str, list[str]] = {}
 
     for status_file in glob.glob(f"{BASE_DIR}/*/*/output/status.json"):
         try:
@@ -97,47 +178,67 @@ def main():
         except (json.JSONDecodeError, OSError):
             continue
 
-        stage = status.get("stage", "in_progress")
-        if stage not in STAGES:
-            continue
-
         pm = status.get("pm", "")
-        initiative = status.get("initiative", os.path.basename(
-            os.path.dirname(os.path.dirname(status_file))
-        ))
-        updated_str = status.get("updated", str(today))
-
-        try:
-            updated = date.fromisoformat(updated_str)
-        except ValueError:
-            updated = today
-
-        days_in_stage = (today - updated).days
-        stage_info = STAGES[stage]
-
-        if days_in_stage < stage_info["remind_after_days"]:
-            continue
-
-        # Repeat every N days after initial reminder
-        excess = days_in_stage - stage_info["remind_after_days"]
-        if excess > 0 and excess % stage_info["repeat_every_days"] != 0:
-            continue
-
-        chat_id = pms.get(pm)
-        if not chat_id or chat_id == "YOUR_TELEGRAM_CHAT_ID":
-            log(f"  No chat_id for PM '{pm}', skipping {initiative}")
-            continue
-
-        text = (
-            f"{stage_info['emoji']} <b>{initiative}</b>\n\n"
-            f"<b>{stage_info['title']}</b>\n"
-            f"{stage_info['body']}\n\n"
-            f"💡 {stage_info['hint']}"
+        initiative = status.get("initiative",
+            os.path.basename(os.path.dirname(os.path.dirname(status_file)))
         )
+        pending = status.get("pending", {})
+        chat_id = pms_config.get(pm)
 
-        if send_telegram(bot_token, chat_id, text):
-            log(f"Sent to {pm}: {initiative} ({stage}, day {days_in_stage})")
-            sent += 1
+        if not chat_id or "YOUR_TELEGRAM" in str(chat_id):
+            continue
+
+        for event_type, event_date_str in pending.items():
+            if not event_date_str:
+                continue
+
+            rule = RULES.get(event_type)
+            if not rule:
+                continue
+
+            try:
+                event_date = date.fromisoformat(event_date_str)
+            except ValueError:
+                continue
+
+            days = (today - event_date).days
+
+            # Friday digest: collect analytics items separately
+            if is_friday and rule.get("friday_digest"):
+                if pm not in friday_digest:
+                    friday_digest[pm] = []
+                friday_digest[pm].append(
+                    f"{rule['emoji']} <b>{initiative}</b>: {rule['title']}"
+                    + (f" ({days} дн.)" if days > 0 else "")
+                )
+                # Still fire individual reminder if due today (e.g. day 1)
+                if not should_remind(event_date, today, rule):
+                    continue
+            else:
+                if not should_remind(event_date, today, rule):
+                    continue
+
+            text = (
+                f"{rule['emoji']} <b>{initiative}</b>\n\n"
+                f"<b>{rule['title']}</b>\n"
+                f"{rule['body']}\n\n"
+                f"💡 {rule['hint']}"
+            )
+
+            if send_telegram(bot_token, chat_id, text):
+                log(f"Sent to {pm}: {initiative} / {event_type} (day {days})")
+                sent += 1
+
+    # Send Friday digest
+    if is_friday:
+        for pm, items in friday_digest.items():
+            chat_id = pms_config.get(pm)
+            if not chat_id or not items:
+                continue
+            text = "📅 <b>Пятница: задачи у аналитика</b>\n\n" + "\n".join(items)
+            if send_telegram(bot_token, chat_id, text):
+                log(f"Friday digest → {pm}: {len(items)} item(s)")
+                sent += 1
 
     log(f"Done. Sent {sent} reminder(s).")
 

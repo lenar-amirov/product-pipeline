@@ -35,9 +35,19 @@ sed -i '' "s/\[НАЗВАНИЕ\]/$NAME/g" "$TARGET/CONTEXT.md"
 sed -i '' "s/\[ИМЯ\]/$PM/g" "$TARGET/CONTEXT.md"
 
 # Инициализируем трекер статуса
-cat > "$TARGET/output/status.json" << EOF
-{"stage": "in_progress", "pm": "$PM", "initiative": "$NAME", "updated": "$(date +%Y-%m-%d)"}
-EOF
+python3 -c "
+import json, sys
+d = {
+  'pm': sys.argv[1],
+  'initiative': sys.argv[2],
+  'pending': {
+    'analytics_brief': None, 'survey_brief': None, 'audience_brief': None,
+    'analytics_results': None, 'design_brief': None, 'gate1_challenge': None,
+    'jira': None, 'grooming': None
+  }
+}
+print(json.dumps(d, indent=2, ensure_ascii=False))
+" "$PM" "$NAME" > "$TARGET/output/status.json"
 
 echo "✓ Инициатива создана: $TARGET"
 echo ""

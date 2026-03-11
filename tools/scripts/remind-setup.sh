@@ -18,12 +18,13 @@ if [ ! -f "$CONFIG" ]; then
 fi
 
 # Add cron: run at 10:00 and 16:00 every day
-CRON_LINE="0 10,16 * * * /usr/bin/python3 $SCRIPT >> $LOG_DIR/remind.log 2>&1"
+# 8 UTC = 11 MSK (UTC+3)
+CRON_LINE="0 8 * * * /usr/bin/python3 $SCRIPT >> $LOG_DIR/remind.log 2>&1"
 
 # Remove old entry if exists, then add fresh
 (crontab -l 2>/dev/null | grep -v "remind.py"; echo "$CRON_LINE") | crontab -
 
-echo "✓ Cron set up: reminders at 10:00 and 16:00 daily"
+echo "✓ Cron set up: reminders at 11:00 MSK (08:00 UTC) daily"
 echo "  Log: $LOG_DIR/remind.log"
 echo ""
 echo "Test run:"
